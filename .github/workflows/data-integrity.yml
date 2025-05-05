@@ -1,0 +1,60 @@
+name: Run SQL Query on CSV with DuckDB
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  run-sql-query:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Check out the repository
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      # Install DuckDB
+      - name: Install DuckDB
+        run: |
+          python -m pip install --upgrade pip
+          pip install duckdb
+
+      # Run SQL query on CSV using DuckDB
+      - name: Execute SQL query
+        run: |
+          python -c "
+          import duckdb
+
+          # Connect to DuckDB in-memory database
+          con = duckdb.connect()
+
+          # Load CSV file directly into DuckDB (replace 'data.csv' with your CSV file path)
+          # DuckDB can query CSV files directly without loading into a table
+          query = '''
+          SELECT * FROM read_csv('data/data.csv') WHERE column_name > 100
+          '''
+
+          # Execute query and fetch results
+          result = con.execute(query).fetchdf()
+
+          # Save results to a CSV file
+          result.to_csv('query_results.csv', index=False)
+
+          # Close connection
+          con.close()
+          "
+
+      # Upload query results as an artifact
+      - name: Upload query results
+        uses: actions/upload-artifact@v4
+        with:
+          name: sql-query-results
+          path: query_results.csv
