@@ -39,12 +39,15 @@ jobs:
           # Load CSV file directly into DuckDB (replace 'data.csv' with your CSV file path)
           # DuckDB can query CSV files directly without loading into a table
           query = '''
-          SELECT * FROM read_csv('data/data.csv') WHERE column_name > 100
+          SELECT * FROM read_csv('data/data.csv') WHERE price > 100
           '''
 
           # Execute query and fetch results
           result = con.execute(query).fetchdf()
 
+          # Print the dataframe
+          print(result)
+          
           # Save results to a CSV file
           result.to_csv('query_results.csv', index=False)
 
